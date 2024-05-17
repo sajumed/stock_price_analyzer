@@ -1,0 +1,16 @@
+{
+  "name": "stock-analysis-tool",
+  "version": "1.0.0",
+  "description": "A simple tool to fetch and visualize stock data with technical indicators",
+  "main": "stock_fetcher.js",
+  "scripts": {
+    "fetch": "node stock_fetcher.js",
+    "analyze": "python stock_visualizer.py"
+  },
+  "keywords": ["stock", "analysis", "technical-indicators"],
+  "author": "Stock Analysis Tool",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
