@@ -1,79 +1,73 @@
-/**
- * Stock Data Fetcher - Fetches historical stock data from Alpha Vantage API
- */
+const axios = require('axios');
 
 class StockDataFetcher {
-    constructor(apiKey) {
-        this.apiKey = apiKey;
-        this.baseUrl = 'https://www.alphavantage.co/query';
+    constructor() {
+        this.baseURL = 'https://www.alphavantage.co/query';
+        // You need to get a free API key from https://www.alphavantage.co/support/#api-key
+        this.apiKey = 'YOUR_API_KEY_HERE'; // Replace with your actual API key
     }
 
     /**
-     * Fetch daily stock data for a given symbol
-     * @param {string} symbol - Stock symbol (e.g., 'AAPL')
-     * @param {string} outputSize - 'compact' (last 100 days) or 'full' (20+ years)
+     * Fetch stock data from Alpha Vantage API
+     * @param {string} symbol - Stock symbol (e.g., 'AAPL', 'MSFT')
+     * @param {string} interval - Time interval ('1min', '5min', '15min', '30min', '60min', 'daily')
+     * @param {string} outputSize - 'compact' (last 100 data points) or 'full'
      * @returns {Promise<Array>} Array of stock data objects
      */
-    async fetchStockData(symbol, outputSize = 'compact') {
+    async fetchStockData(symbol, interval = 'daily', outputSize = 'compact') {
         try {
-            const url = `${this.baseUrl}?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=${outputSize}&apikey=${this.apiKey}`;
+            const response = await axios.get(this.baseURL, {
+                params: {
+                    function: interval === 'daily' ? 'TIME_SERIES_DAILY' : `TIME_SERIES_INTRADAY`,
+                    symbol: symbol,
+                    interval: interval !== 'daily' ? interval : undefined,
+                    outputsize: outputSize,
+                    apikey: this.apiKey
+                }
+            });
+
+            const timeSeriesKey = interval === 'daily' 
+                ? 'Time Series (Daily)' 
+                : `Time Series (${interval})`;
+
+            const timeSeries = response.data[timeSeriesKey];
             
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (data['Error Message']) {
-                throw new Error(`API Error: ${data['Error Message']}`);
-            }
-            
-            if (data['Note']) {
-                console.warn('API Limit Note:', data['Note']);
-            }
-            
-            const timeSeries = data['Time Series (Daily)'];
             if (!timeSeries) {
-                throw new Error('No time series data found in response');
+                throw new Error('No data received from API');
             }
-            
-            return this.parseTimeSeries(timeSeries, symbol);
-            
+
+            // Convert the object to an array and format the data
+            const formattedData = Object.keys(timeSeries).map(date => {
+                const data = timeSeries[date];
+                return {
+                    date: new Date(date),
+                    open: parseFloat(data['1. open']),
+                    high: parseFloat(data['2. high']),
+                    low: parseFloat(data['3. low']),
+                    close: parseFloat(data['4. close']),
+                    volume: parseFloat(data['5. volume'])
+                };
+            });
+
+            // Sort by date ascending
+            return formattedData.sort((a, b) => a.date - b.date);
+
         } catch (error) {
-            console.error('Error fetching stock data:', error);
+            console.error('Error fetching stock data:', error.message);
             throw error;
         }
     }
 
     /**
-     * Parse time series data into structured format
+     * Get available stock symbols (mock data for demonstration)
+     * @returns {Array} Array of stock symbols
      */
-    parseTimeSeries(timeSeries, symbol) {
-        const data = [];
-        
-        for (const [date, values] of Object.entries(timeSeries)) {
-            data.push({
-                symbol: symbol,
-                date: date,
-                open: parseFloat(values['1. open']),
-                high: parseFloat(values['2. high']),
-                low: parseFloat(values['3. low']),
-                close: parseFloat(values['4. close']),
-                volume: parseInt(values['5. volume'])
-            });
-        }
-        
-        // Sort by date ascending
-        return data.sort((a, b) => new Date(a.date) - new Date(b.date));
-    }
-
-    /**
-     * Fetch data for multiple symbols
-     */
-    async fetchMultipleStocks(symbols, outputSize = 'compact') {
-        const promises = symbols.map(symbol => this.fetchStockData(symbol, outputSize));
-        return Promise.all(promises);
+    getAvailableSymbols() {
+        return [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 
+            'META', 'NVDA', 'NFLX', 'AMD', 'INTC'
+        ];
     }
 }
 
-// Export for use in other modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = StockDataFetcher;
-}
+module.exports = StockDataFetcher;
