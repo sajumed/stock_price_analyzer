@@ -1,19 +1,21 @@
 {
-  "name": "stock-visualizer",
+  "name": "stock-analysis-tool",
   "version": "1.0.0",
-  "description": "Stock price data fetcher and visualizer with technical indicators",
-  "main": "stockAnalyzer.js",
+  "description": "A tool to fetch stock data and visualize with technical indicators",
+  "main": "stock_data_fetcher.js",
   "scripts": {
-    "start": "node stockAnalyzer.js",
-    "dev": "node stockAnalyzer.js"
+    "fetch": "node stock_data_fetcher.js",
+    "start": "node stock_data_fetcher.js"
   },
   "dependencies": {
-    "axios": "^1.6.0",
-    "technicalindicators": "^3.1.0",
-    "chart.js": "^4.4.0",
-    "chartjs-node-canvas": "^4.1.6"
+    "axios": "^1.6.0"
   },
-  "keywords": ["stock", "technical-analysis", "visualization"],
-  "author": "Stock Analyzer",
+  "keywords": [
+    "stock",
+    "analysis",
+    "technical-indicators",
+    "visualization"
+  ],
+  "author": "Stock Analysis Tool",
   "license": "MIT"
 }
