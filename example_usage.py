@@ -1,14 +1,12 @@
-"""
-Example usage of the stock analysis tool
-"""
-
 from stock_data import StockDataFetcher
 from stock_visualizer import StockVisualizer
 
-def example_analysis():
+def example_usage():
     """
-    Example of how to use the stock analysis classes
+    Example usage of the stock analysis tool
     """
+    print("=== Stock Analysis Tool Example ===")
+    
     # Initialize classes
     fetcher = StockDataFetcher()
     visualizer = StockVisualizer()
@@ -20,19 +18,25 @@ def example_analysis():
         print(f"\nAnalyzing {symbol}...")
         
         # Fetch data
-        if fetcher.fetch_stock_data(symbol, period="6mo"):
+        if fetcher.fetch_data(symbol, period="6mo"):
+            # Calculate indicators
+            fetcher.calculate_sma(20)
+            fetcher.calculate_ema(20)
+            fetcher.calculate_rsi(14)
+            fetcher.calculate_macd()
+            
             data = fetcher.get_data()
+            latest_price = fetcher.get_latest_price()
             
-            # Get summary statistics
-            stats = fetcher.get_summary_stats()
-            if stats:
-                print(f"Current RSI: {stats['rsi']:.2f}")
-                print(f"Price vs SMA20: {((stats['current_price'] - stats['sma_20']) / stats['sma_20'] * 100):.2f}%")
+            print(f"Latest price: ${latest_price:.2f}")
+            print(f"RSI: {data['RSI'].iloc[-1]:.2f}")
             
-            # Create and save visualization
-            visualizer.create_dashboard(data, symbol)
-            visualizer.save_plot(f"{symbol}_analysis.png")
-            print(f"Analysis saved as {symbol}_analysis.png")
+            # Create and save chart
+            fig, axs = visualizer.create_price_chart(data, symbol)
+            visualizer.save_chart(f"{symbol}_analysis.png")
+            print(f"Chart saved as {symbol}_analysis.png")
+        else:
+            print(f"Failed to fetch data for {symbol}")
 
 if __name__ == "__main__":
-    example_analysis()
+    example_usage()
